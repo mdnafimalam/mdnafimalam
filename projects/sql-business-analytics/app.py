@@ -156,7 +156,7 @@ elif page == "Sales Performance":
         index="region", columns="category", values="revenue", aggfunc="sum", fill_value=0
     )
     st.dataframe(
-        category_region.style.format("${:,.2f}").background_gradient(cmap="Blues", axis=None),
+        category_region.style.format("${:,.2f}"),
         use_container_width=True,
     )
     st.markdown("### Product performance table")

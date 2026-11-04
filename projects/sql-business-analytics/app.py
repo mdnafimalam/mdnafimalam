@@ -1,4 +1,4 @@
-"""Interactive Streamlit dashboard for synthetic retail sales."""
+"""Retail Intelligence — portfolio business analytics dashboard with synthetic data."""
 import sqlite3
 import sys
 from pathlib import Path
@@ -7,14 +7,20 @@ import pandas as pd
 import streamlit as st
 
 DB = Path(__file__).with_name("retail_analytics.db")
-
-st.set_page_config(page_title="Retail Sales | SQL Analytics", page_icon="📊", layout="wide")
-st.title("📊 Retail Sales Analytics")
-st.caption("Portfolio demonstration · Synthetic retail data · Completed orders only")
+st.set_page_config(page_title="Retail Intelligence | SQL Analytics", page_icon="📈", layout="wide", initial_sidebar_state="expanded")
+st.markdown("""
+<style>
+.block-container {max-width: 1450px; padding-top: 1.8rem; padding-bottom: 3rem;}
+[data-testid="stSidebar"] {background: #111c2e;}
+[data-testid="stSidebar"] * {color: #e8eef8;}
+[data-testid="stMetric"] {background: rgba(120,140,170,.10); border: 1px solid rgba(140,155,180,.20); border-radius: 14px; padding: 18px 20px;}
+[data-testid="stMetricLabel"] {font-weight: 600;}
+h1, h2, h3 {letter-spacing: -.025em;}
+div[data-testid="stDataFrame"] {border-radius: 12px; overflow: hidden;}
+</style>
+""", unsafe_allow_html=True)
 
 if not DB.exists():
-    # Streamlit Community Cloud starts with a fresh filesystem.
-    # Generate deterministic demo data once when the database is absent.
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from generate_data import main as generate_demo_data
@@ -23,12 +29,10 @@ if not DB.exists():
         st.error(f"Could not initialize the demonstration database: {exc}")
         st.stop()
 
-
 @st.cache_data
 def load_lines():
     with sqlite3.connect(DB) as con:
-        df = pd.read_sql_query(
-            """
+        df = pd.read_sql_query("""
             SELECT o.order_id, o.order_date, o.customer_id, c.segment, c.region,
                    p.product_name, p.category, oi.quantity, oi.unit_price,
                    ROUND(oi.quantity * oi.unit_price, 2) AS revenue
@@ -37,12 +41,9 @@ def load_lines():
             JOIN order_items oi ON oi.order_id = o.order_id
             JOIN products p ON p.product_id = oi.product_id
             WHERE o.status = 'Completed'
-            """,
-            con,
-        )
+        """, con)
     df["order_date"] = pd.to_datetime(df["order_date"])
     return df
-
 
 data = load_lines()
 if data.empty:
@@ -50,106 +51,129 @@ if data.empty:
     st.stop()
 
 with st.sidebar:
-    st.header("Filters")
-    earliest = data["order_date"].min().date()
-    latest = data["order_date"].max().date()
+    st.markdown("## 📈 Retail Intelligence")
+    st.caption("BUSINESS ANALYTICS · PORTFOLIO")
+    st.divider()
+    page = st.radio("Workspace", ["Executive Overview", "Sales Performance", "Customer Insights", "Reports & Data Quality"], label_visibility="collapsed")
+    st.divider()
+    st.markdown("#### Global filters")
+    earliest, latest = data["order_date"].min().date(), data["order_date"].max().date()
     dates = st.date_input("Order date range", (earliest, latest), min_value=earliest, max_value=latest)
-    categories = st.multiselect(
-        "Product categories",
-        sorted(data["category"].unique()),
-        default=sorted(data["category"].unique()),
-    )
+    categories = st.multiselect("Category", sorted(data["category"].unique()), default=sorted(data["category"].unique()))
+    regions = st.multiselect("Region", sorted(data["region"].unique()), default=sorted(data["region"].unique()))
+    segments = st.multiselect("Customer segment", sorted(data["segment"].unique()), default=sorted(data["segment"].unique()))
+    st.divider()
+    st.caption("🔬 Synthetic retail data · Not actual business transactions")
 
 if not isinstance(dates, (tuple, list)) or len(dates) != 2:
-    st.info("Choose a start and end date.")
+    st.info("Choose both a start and an end date.")
     st.stop()
-
 start, end = dates
 filtered = data.loc[
     data["order_date"].dt.date.between(start, end)
     & data["category"].isin(categories)
+    & data["region"].isin(regions)
+    & data["segment"].isin(segments)
 ].copy()
 
+st.title("Retail Intelligence")
+st.caption("Interactive SQL-powered business analytics  ·  Synthetic portfolio dataset")
+st.markdown(f"**{page}** &nbsp; · &nbsp; {start:%b %d, %Y} — {end:%b %d, %Y} &nbsp; · &nbsp; {len(filtered):,} order lines")
+st.divider()
 if filtered.empty:
-    st.warning("No matching sales. Adjust the filters.")
+    st.warning("No sales match your filters. Adjust the date range or selections.")
     st.stop()
 
 revenue = filtered["revenue"].sum()
 orders = filtered["order_id"].nunique()
 customers = filtered["customer_id"].nunique()
 aov = revenue / orders if orders else 0
-
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Revenue", f"${revenue:,.2f}")
-c2.metric("Orders", f"{orders:,}")
-c3.metric("Average order value*", f"${aov:,.2f}")
-c4.metric("Unique customers", f"{customers:,}")
-
-# Compare selected dates with the preceding equally long period.
 period_days = (end - start).days + 1
-previous_end = start - pd.Timedelta(days=1)
-previous_start = start - pd.Timedelta(days=period_days)
-previous = data.loc[data["order_date"].dt.date.between(previous_start, previous_end) & data["category"].isin(categories)]
-previous_revenue = previous["revenue"].sum()
-previous_orders = previous["order_id"].nunique()
-st.subheader("Period-over-period performance")
-p1, p2, p3 = st.columns(3)
-p1.metric("Revenue vs. prior period", f"${revenue:,.2f}", delta=f"{(revenue / previous_revenue - 1) * 100:+.1f}%" if previous_revenue else None)
-p2.metric("Orders vs. prior period", f"{orders:,}", delta=f"{(orders / previous_orders - 1) * 100:+.1f}%" if previous_orders else None)
-p3.metric("Prior-period revenue", f"${previous_revenue:,.2f}")
-if not previous_revenue:
-    st.caption("No comparable sales in the preceding period; growth percentage is unavailable.")
-st.caption("*For filtered categories, average order value reflects only selected category revenue per matching order.")
+prev_end = start - pd.Timedelta(days=1)
+prev_start = start - pd.Timedelta(days=period_days)
+previous = data.loc[
+    data["order_date"].dt.date.between(prev_start, prev_end)
+    & data["category"].isin(categories)
+    & data["region"].isin(regions)
+    & data["segment"].isin(segments)
+]
+prev_revenue = previous["revenue"].sum()
+prev_orders = previous["order_id"].nunique()
+revenue_delta = f"{(revenue / prev_revenue - 1) * 100:+.1f}%" if prev_revenue else None
+orders_delta = f"{(orders / prev_orders - 1) * 100:+.1f}%" if prev_orders else None
 
-monthly = (
-    filtered.assign(month=filtered["order_date"].dt.to_period("M").dt.to_timestamp())
-    .groupby("month", as_index=False)["revenue"].sum()
-    .set_index("month")
-)
+def metrics():
+    a, b, c, d = st.columns(4)
+    a.metric("Total revenue", f"$" + f"{revenue:,.2f}", delta=revenue_delta)
+    b.metric("Completed orders", f"{orders:,}", delta=orders_delta)
+    c.metric("Average order value", f"$" + f"{aov:,.2f}")
+    d.metric("Unique customers", f"{customers:,}")
+
+monthly = filtered.assign(month=filtered["order_date"].dt.to_period("M").dt.to_timestamp()).groupby("month")["revenue"].sum()
 by_category = filtered.groupby("category")["revenue"].sum().sort_values(ascending=False)
-top_products = filtered.groupby("product_name")["revenue"].sum().nlargest(10)
+by_region = filtered.groupby("region")["revenue"].sum().sort_values(ascending=False)
+by_product = filtered.groupby("product_name")["revenue"].sum().sort_values(ascending=False)
 
-left, right = st.columns(2)
-with left:
-    st.subheader("Monthly revenue")
-    st.line_chart(monthly)
-    st.subheader("Top 10 products")
-    st.bar_chart(top_products)
-with right:
-    st.subheader("Revenue by category")
-    st.bar_chart(by_category)
-    st.subheader("Revenue by region")
-    st.bar_chart(filtered.groupby("region")["revenue"].sum().sort_values(ascending=False))
+if page == "Executive Overview":
+    metrics()
+    if not prev_revenue:
+        st.caption("Growth deltas unavailable: no comparable sales in the preceding period.")
+    st.markdown("### Revenue trends & product mix")
+    left, right = st.columns([1.5, 1])
+    with left:
+        st.line_chart(monthly, x_label="Month", y_label="Revenue ($)")
+    with right:
+        st.bar_chart(by_category, x_label="Category", y_label="Revenue ($)")
+    st.markdown("### Business highlights")
+    x, y, z = st.columns(3)
+    x.info(f"**Leading category**\n\n{by_category.index[0]}")
+    y.info(f"**Top region**\n\n{by_region.index[0]}")
+    z.info(f"**Top product by revenue**\n\n{by_product.index[0]}")
+    st.caption("Descriptive findings only; synthetic data cannot support real-world business recommendations.")
 
-st.subheader("Customer and product insights")
-segment_col, product_col = st.columns(2)
-with segment_col:
-    st.markdown("**Revenue by customer segment**")
-    st.bar_chart(filtered.groupby("segment")["revenue"].sum().sort_values(ascending=False))
-with product_col:
-    st.markdown("**Top 5 products by revenue**")
-    top_five = filtered.groupby("product_name")["revenue"].sum().nlargest(5).rename("Revenue").reset_index()
-    st.dataframe(top_five, hide_index=True, use_container_width=True)
+elif page == "Sales Performance":
+    metrics()
+    st.markdown("### Revenue by region and product")
+    left, right = st.columns(2)
+    with left:
+        st.bar_chart(by_region, x_label="Region", y_label="Revenue ($)")
+    with right:
+        st.bar_chart(by_product.head(10), x_label="Product", y_label="Revenue ($)")
+    st.markdown("### Product performance table")
+    product_table = filtered.groupby(["category", "product_name"]).agg(
+        revenue=("revenue", "sum"), units_sold=("quantity", "sum"), order_count=("order_id", "nunique")
+    ).reset_index().sort_values("revenue", ascending=False)
+    st.dataframe(product_table, use_container_width=True, hide_index=True)
 
-st.subheader("Business insights")
-top_category = by_category.index[0]
-top_region = filtered.groupby("region")["revenue"].sum().idxmax()
-top_product = top_products.index[0]
-st.markdown(f"- **Leading category:** {top_category}\n- **Leading region:** {top_region}\n- **Top product by revenue:** {top_product}")
-st.info("Next step: Compare lower-performing regions and customer segments to identify potential opportunities.")
-st.caption("These are descriptive insights from synthetic demo data, not causal conclusions.")
+elif page == "Customer Insights":
+    st.markdown("### Customer behavior")
+    a, b, c = st.columns(3)
+    orders_per_customer = filtered.groupby("customer_id")["order_id"].nunique()
+    repeat_customers = int((orders_per_customer > 1).sum())
+    a.metric("Active customers", f"{customers:,}")
+    b.metric("Repeat customers", f"{repeat_customers:,}")
+    c.metric("Repeat customer share", f"{repeat_customers / customers:.1%}" if customers else "—")
+    left, right = st.columns(2)
+    with left:
+        st.markdown("#### Revenue by customer segment")
+        st.bar_chart(filtered.groupby("segment")["revenue"].sum().sort_values(ascending=False))
+    with right:
+        st.markdown("#### Customers by region")
+        st.bar_chart(filtered.groupby("region")["customer_id"].nunique().sort_values(ascending=False))
+    st.caption("Repeat customer = customer with more than one completed order in the selected filters.")
 
-st.subheader("Data quality checks")
-q1, q2, q3 = st.columns(3)
-q1.metric("Missing key values", int(filtered[["order_id", "customer_id", "product_name", "revenue"]].isna().sum().sum()))
-q2.metric("Negative revenue lines", int((filtered["revenue"] < 0).sum()))
-q3.metric("Filtered order lines", f"{len(filtered):,}")
+else:
+    st.markdown("### Data quality")
+    a, b, c = st.columns(3)
+    missing = int(filtered[["order_id", "customer_id", "product_name", "revenue"]].isna().sum().sum())
+    negative = int((filtered["revenue"] < 0).sum())
+    a.metric("Missing key values", missing)
+    b.metric("Negative revenue lines", negative)
+    c.metric("Filtered order lines", f"{len(filtered):,}")
+    st.markdown("### Exportable transaction detail")
+    st.dataframe(filtered.sort_values("order_date", ascending=False), use_container_width=True, hide_index=True)
+    st.download_button("⬇ Download filtered sales CSV", filtered.to_csv(index=False).encode("utf-8"), file_name="retail_intelligence_filtered.csv", mime="text/csv")
+    st.caption("Quality checks cover the filtered completed-order lines; they are not a full database audit.")
 
-st.subheader("Filtered sales data")
-st.dataframe(filtered.sort_values("order_date", ascending=False), use_container_width=True)
-st.download_button(
-    "Download filtered CSV",
-    filtered.to_csv(index=False).encode("utf-8"),
-    file_name="filtered_sales.csv",
-    mime="text/csv",
-)
+st.divider()
+st.caption("Built with Python · SQL · SQLite · Pandas · Streamlit | Portfolio demonstration using deterministic synthetic data.")

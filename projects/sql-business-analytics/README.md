@@ -94,3 +94,25 @@ The styling is designed for a professional portfolio presentation. All data rema
 - **Customer segment performance:** segment-level revenue, distinct orders, customers, units, average order value, and revenue per customer.
 
 All views respect the dashboard's date, category, region, and customer-segment filters. These are descriptive metrics on synthetic demo data; period comparisons require available prior-period records.
+
+## Automated tests and continuous integration
+
+The dashboard's calculations are implemented in `analytics_core.py`, shared by the Streamlit app and automated tests. `test_analytics.py` includes **13 unit and SQLite integration tests** covering:
+
+- Revenue, distinct orders, average order value, units sold, and category share
+- Unique customers, repeat customers, repeat share, and revenue per customer
+- Inclusive date filters and combined category/region/segment filters
+- Empty selections and invalid date ranges
+- Missing data, invalid quantities, negative values, and line-total mismatches
+- Generated database tables, completed-only sales, SQL/Python revenue agreement, and referential integrity
+
+Run tests locally (from `projects/sql-business-analytics`):
+
+```bash
+py -m pip install -r requirements.txt
+py -m unittest discover -v -p "test_*.py"
+```
+
+On macOS/Linux, use `python3` instead of `py`. The tests create their own temporary SQLite database and do **not** overwrite your dashboard's local database.
+
+GitHub Actions runs the test suite automatically on pushes and pull requests affecting this project; see `.github/workflows/sql-dashboard-tests.yml`. A passing workflow should be confirmed in the repository's **Actions** tab before claiming CI is green.

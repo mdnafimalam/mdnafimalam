@@ -10,13 +10,34 @@ DB = Path(__file__).with_name("retail_analytics.db")
 st.set_page_config(page_title="Retail Intelligence | SQL Analytics", page_icon="📈", layout="wide", initial_sidebar_state="expanded")
 st.markdown("""
 <style>
-.block-container {max-width: 1450px; padding-top: 1.8rem; padding-bottom: 3rem;}
-[data-testid="stSidebar"] {background: #111c2e;}
-[data-testid="stSidebar"] * {color: #e8eef8;}
-[data-testid="stMetric"] {background: rgba(120,140,170,.10); border: 1px solid rgba(140,155,180,.20); border-radius: 14px; padding: 18px 20px;}
-[data-testid="stMetricLabel"] {font-weight: 600;}
-h1, h2, h3 {letter-spacing: -.025em;}
-div[data-testid="stDataFrame"] {border-radius: 12px; overflow: hidden;}
+:root { --brand: #3b82f6; --ink: #0f172a; --muted: #64748b; }
+.block-container { max-width: 1440px; padding-top: 1.7rem; padding-bottom: 3rem; }
+[data-testid="stSidebar"] { background: #0f172a; border-right: 1px solid #26344b; }
+[data-testid="stSidebar"] * { color: #e2e8f0; }
+[data-testid="stSidebar"] [data-baseweb="tag"] { background-color: #334155; }
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p { font-weight: 600; }
+[data-testid="stMetric"] {
+  background: rgba(100,116,139,.08); border: 1px solid rgba(100,116,139,.22);
+  border-radius: 16px; padding: 18px 20px; min-height: 110px;
+}
+[data-testid="stMetricLabel"] { font-weight: 600; }
+[data-testid="stMetricValue"] { font-size: clamp(1.4rem, 2.4vw, 2rem); letter-spacing: -.035em; }
+[data-testid="stVerticalBlockBorderWrapper"] { border-radius: 16px; }
+h1, h2, h3 { letter-spacing: -.035em; }
+h1 { font-weight: 800; }
+h3 { margin-top: 1.25rem; }
+[data-testid="stDataFrame"] { border-radius: 12px; overflow: hidden; }
+[data-testid="stDownloadButton"] button { border-radius: 10px; font-weight: 600; }
+.hero {
+  padding: 24px 28px; border-radius: 18px; margin: 0 0 14px;
+  background: linear-gradient(115deg,#0f172a 0%,#1d3558 65%,#1d4ed8 150%);
+  color: #f8fafc; border: 1px solid #334155;
+}
+.hero .eyebrow { color: #93c5fd; font-size: .76rem; font-weight: 700; letter-spacing: .14em; }
+.hero h1 { color: #fff; margin: 8px 0; font-size: clamp(1.8rem,3vw,2.7rem); }
+.hero p { color: #cbd5e1; margin: 0; }
+.section-kicker { font-size: .76rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: #64748b; }
+@media (max-width: 700px) { .hero { padding: 18px; } .block-container { padding-top: 1rem; } }
 </style>
 """, unsafe_allow_html=True)
 
@@ -51,8 +72,8 @@ if data.empty:
     st.stop()
 
 with st.sidebar:
-    st.markdown("## 📈 Retail Intelligence")
-    st.caption("BUSINESS ANALYTICS · PORTFOLIO")
+    st.markdown("## ◈ Retail Intelligence")
+    st.caption("ANALYTICS WORKSPACE  /  V2.0")
     st.divider()
     page = st.radio("Workspace", ["Executive Overview", "Sales Performance", "Customer Insights", "Reports & Data Quality"], label_visibility="collapsed")
     st.divider()
@@ -76,9 +97,14 @@ filtered = data.loc[
     & data["segment"].isin(segments)
 ].copy()
 
-st.title("Retail Intelligence")
-st.caption("Interactive SQL-powered business analytics  ·  Synthetic portfolio dataset")
-st.markdown(f"**{page}** &nbsp; · &nbsp; {start:%b %d, %Y} — {end:%b %d, %Y} &nbsp; · &nbsp; {len(filtered):,} order lines")
+st.markdown(
+    '<div class="hero"><div class="eyebrow">BUSINESS INTELLIGENCE / PORTFOLIO PROJECT</div>'
+    '<h1>Retail Intelligence</h1>'
+    '<p>Explore sales performance, product trends, and customer behavior through SQL-powered analytics.</p>'
+    '</div>',
+    unsafe_allow_html=True,
+)
+st.markdown(f"**{page}** &nbsp; · &nbsp; :blue[**SYNTHETIC DATA**] &nbsp; · &nbsp; {start:%b %d, %Y} – {end:%b %d, %Y} &nbsp; · &nbsp; {len(filtered):,} sales lines")
 st.divider()
 if filtered.empty:
     st.warning("No sales match your filters. Adjust the date range or selections.")
@@ -108,6 +134,7 @@ def metrics():
     b.metric("Completed orders", f"{orders:,}", delta=orders_delta)
     c.metric("Average order value", f"$" + f"{aov:,.2f}")
     d.metric("Unique customers", f"{customers:,}")
+    st.markdown("#### Additional performance indicators")
     e, f, g = st.columns(3)
     e.metric("Units sold", f"{int(filtered['quantity'].sum()):,}")
     f.metric("Revenue per customer", f"${revenue / customers:,.2f}" if customers else "—")
@@ -123,12 +150,14 @@ if page == "Executive Overview":
     if not prev_revenue:
         st.caption("Growth deltas unavailable: no comparable sales in the preceding period.")
     st.markdown("### Revenue trends & product mix")
+    st.caption("Monthly sales trend and contribution by product category")
     left, right = st.columns([1.5, 1])
     with left:
         st.line_chart(monthly, x_label="Month", y_label="Revenue ($)")
     with right:
         st.bar_chart(by_category, x_label="Category", y_label="Revenue ($)")
     st.markdown("### Daily revenue and 7-day moving average")
+    st.caption("A trailing moving average smooths daily fluctuations; zero-sales dates are included.")
     daily = filtered.groupby(filtered["order_date"].dt.normalize())["revenue"].sum()
     daily = daily.reindex(pd.date_range(start, end, freq="D"), fill_value=0)
     daily_trends = pd.DataFrame({
@@ -136,7 +165,7 @@ if page == "Executive Overview":
         "7-day moving average": daily.rolling(7, min_periods=1).mean(),
     })
     st.line_chart(daily_trends, x_label="Date", y_label="Revenue ($)")
-    st.markdown("### Business highlights")
+    st.markdown("### Executive highlights")
     x, y, z = st.columns(3)
     x.info(f"**Leading category**\n\n{by_category.index[0]}")
     y.info(f"**Top region**\n\n{by_region.index[0]}")
@@ -152,6 +181,7 @@ elif page == "Sales Performance":
     with right:
         st.bar_chart(by_product.head(10), x_label="Product", y_label="Revenue ($)")
     st.markdown("### Category performance by region")
+    st.caption("Compare revenue across regions and product categories")
     category_region = filtered.pivot_table(
         index="region", columns="category", values="revenue", aggfunc="sum", fill_value=0
     )
@@ -215,4 +245,4 @@ else:
     st.caption("Quality checks cover the filtered completed-order lines; they are not a full database audit.")
 
 st.divider()
-st.caption("Built with Python · SQL · SQLite · Pandas · Streamlit | Portfolio demonstration using deterministic synthetic data.")
+st.caption("RETAIL INTELLIGENCE  ·  Built with Python, SQL, SQLite, Pandas & Streamlit  ·  Synthetic demonstration data  ·  Portfolio project")

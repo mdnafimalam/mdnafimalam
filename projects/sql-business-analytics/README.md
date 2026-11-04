@@ -4,7 +4,7 @@ A reproducible retail sales analytics portfolio project using **SQLite, Python, 
 
 > **Data disclosure:** This project uses synthetic, deterministic demonstration data, not real company or customer records. Business findings are illustrative.
 
-## Features
+**Live app:** [Open the Streamlit dashboard](https://nafim-sql-analytics.streamlit.app/)\n\n## Features
 - SQLite relational database with customers, products, orders, and order items
 - Repeatable data generation with a fixed random seed
 - SQL analytics: monthly revenue, category performance, top products, repeat customers
@@ -57,7 +57,7 @@ sqlite3 retail_analytics.db < analytics.sql
 
 ## Dashboard
 
-Open the Streamlit URL printed by `streamlit run app.py`. Select a date range and categories to explore trends and download filtered data. The dashboard is local by default; this repository publishes the code, **not a hosted dashboard**.
+Open the Streamlit URL printed by `streamlit run app.py`. Select a date range and categories to explore trends and download filtered data. The dashboard can run locally and has a Streamlit Community Cloud deployment. The deployed app generates its demo database on startup if missing.
 
 ## Limitations and next steps
 

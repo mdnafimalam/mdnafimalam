@@ -1,5 +1,6 @@
 """Interactive Streamlit dashboard for synthetic retail sales."""
 import sqlite3
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -12,8 +13,15 @@ st.title("📊 Retail Sales Analytics")
 st.caption("Portfolio demonstration · Synthetic retail data · Completed orders only")
 
 if not DB.exists():
-    st.error("Database missing. Run `python generate_data.py` in this directory first.")
-    st.stop()
+    # Streamlit Community Cloud starts with a fresh filesystem.
+    # Generate deterministic demo data once when the database is absent.
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from generate_data import main as generate_demo_data
+        generate_demo_data()
+    except (OSError, sqlite3.Error, ImportError) as exc:
+        st.error(f"Could not initialize the demonstration database: {exc}")
+        st.stop()
 
 
 @st.cache_data

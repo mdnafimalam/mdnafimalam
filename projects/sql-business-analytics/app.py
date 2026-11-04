@@ -6,6 +6,8 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from analytics_core import load_sales, filter_sales, sales_kpis, data_quality
+
 DB = Path(__file__).with_name("retail_analytics.db")
 st.set_page_config(page_title="Retail Intelligence | SQL Analytics", page_icon="📈", layout="wide", initial_sidebar_state="expanded")
 st.markdown("""
@@ -52,19 +54,7 @@ if not DB.exists():
 
 @st.cache_data
 def load_lines():
-    with sqlite3.connect(DB) as con:
-        df = pd.read_sql_query("""
-            SELECT o.order_id, o.order_date, o.customer_id, c.segment, c.region,
-                   p.product_name, p.category, oi.quantity, oi.unit_price,
-                   ROUND(oi.quantity * oi.unit_price, 2) AS revenue
-            FROM orders o
-            JOIN customers c ON c.customer_id = o.customer_id
-            JOIN order_items oi ON oi.order_id = o.order_id
-            JOIN products p ON p.product_id = oi.product_id
-            WHERE o.status = 'Completed'
-        """, con)
-    df["order_date"] = pd.to_datetime(df["order_date"])
-    return df
+    return load_sales(DB)
 
 data = load_lines()
 if data.empty:
@@ -90,12 +80,7 @@ if not isinstance(dates, (tuple, list)) or len(dates) != 2:
     st.info("Choose both a start and an end date.")
     st.stop()
 start, end = dates
-filtered = data.loc[
-    data["order_date"].dt.date.between(start, end)
-    & data["category"].isin(categories)
-    & data["region"].isin(regions)
-    & data["segment"].isin(segments)
-].copy()
+filtered = filter_sales(data, start, end, categories, regions, segments)
 
 st.markdown(
     '<div class="hero"><div class="eyebrow">BUSINESS INTELLIGENCE / PORTFOLIO PROJECT</div>'
@@ -110,19 +95,12 @@ if filtered.empty:
     st.warning("No sales match your filters. Adjust the date range or selections.")
     st.stop()
 
-revenue = filtered["revenue"].sum()
-orders = filtered["order_id"].nunique()
-customers = filtered["customer_id"].nunique()
-aov = revenue / orders if orders else 0
+kpis = sales_kpis(filtered)
+revenue, orders, customers, aov = (kpis[key] for key in ("revenue", "orders", "customers", "aov"))
 period_days = (end - start).days + 1
 prev_end = start - pd.Timedelta(days=1)
 prev_start = start - pd.Timedelta(days=period_days)
-previous = data.loc[
-    data["order_date"].dt.date.between(prev_start, prev_end)
-    & data["category"].isin(categories)
-    & data["region"].isin(regions)
-    & data["segment"].isin(segments)
-]
+previous = filter_sales(data, prev_start, prev_end, categories, regions, segments)
 prev_revenue = previous["revenue"].sum()
 prev_orders = previous["order_id"].nunique()
 revenue_delta = f"{(revenue / prev_revenue - 1) * 100:+.1f}%" if prev_revenue else None
@@ -136,9 +114,9 @@ def metrics():
     d.metric("Unique customers", f"{customers:,}")
     st.markdown("#### Additional performance indicators")
     e, f, g = st.columns(3)
-    e.metric("Units sold", f"{int(filtered['quantity'].sum()):,}")
-    f.metric("Revenue per customer", f"${revenue / customers:,.2f}" if customers else "—")
-    g.metric("Top category share", f"{by_category.iloc[0] / revenue:.1%}" if revenue else "—")
+    e.metric("Units sold", f"{kpis['units']:,}")
+    f.metric("Revenue per customer", f"${kpis['revenue_per_customer']:,.2f}" if customers else "—")
+    g.metric("Top category share", f"{kpis['top_category_share']:.1%}" if revenue else "—")
 
 monthly = filtered.assign(month=filtered["order_date"].dt.to_period("M").dt.to_timestamp()).groupby("month")["revenue"].sum()
 by_category = filtered.groupby("category")["revenue"].sum().sort_values(ascending=False)
@@ -198,11 +176,10 @@ elif page == "Sales Performance":
 elif page == "Customer Insights":
     st.markdown("### Customer behavior")
     a, b, c = st.columns(3)
-    orders_per_customer = filtered.groupby("customer_id")["order_id"].nunique()
-    repeat_customers = int((orders_per_customer > 1).sum())
+    repeat_customers = kpis["repeat_customers"]
     a.metric("Active customers", f"{customers:,}")
     b.metric("Repeat customers", f"{repeat_customers:,}")
-    c.metric("Repeat customer share", f"{repeat_customers / customers:.1%}" if customers else "—")
+    c.metric("Repeat customer share", f"{kpis['repeat_share']:.1%}" if customers else "—")
     left, right = st.columns(2)
     with left:
         st.markdown("#### Revenue by customer segment")
@@ -234,8 +211,9 @@ elif page == "Customer Insights":
 else:
     st.markdown("### Data quality")
     a, b, c = st.columns(3)
-    missing = int(filtered[["order_id", "customer_id", "product_name", "revenue"]].isna().sum().sum())
-    negative = int((filtered["revenue"] < 0).sum())
+    quality = data_quality(filtered)
+    missing = quality["missing_required"]
+    negative = quality["negative_revenue"]
     a.metric("Missing key values", missing)
     b.metric("Negative revenue lines", negative)
     c.metric("Filtered order lines", f"{len(filtered):,}")

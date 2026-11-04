@@ -66,3 +66,14 @@ Open the Streamlit URL printed by `streamlit run app.py`. Select a date range an
 - Future enhancements: customer cohorts, gross margin, deployment, automated tests
 
 **Author:** Md. Nafim Alam — Management Information Systems, Emporia State University.
+
+
+## Advanced dashboard features
+
+- Period-over-period revenue and order comparisons for the selected date range (when prior-period data exists).
+- Revenue by customer segment and top-five products by revenue.
+- Automatically generated descriptive business insights for leading category, region, and product.
+- Data-quality checks for missing key values, negative revenue lines, and filtered order-line counts.
+- Interactive category and date filters, SQL-backed KPIs, regional and monthly charts, and CSV export.
+
+**Important:** The dataset is generated, deterministic synthetic retail data. Metrics and recommendations are demonstration outputs, not real-world business results. For date windows without preceding-period data, growth percentages are intentionally omitted.

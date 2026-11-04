@@ -65,16 +65,16 @@ Relevant subjects include:
 
 ## 📂 Project Portfolio
 
-I'm currently preparing projects that demonstrate what I can build. The following are **planned project ideas**, not completed projects:
+I'm currently preparing projects that demonstrate what I can build. My first project is published below. The remaining entries are **planned ideas**, not completed projects:
 
 | Planned project | What it will demonstrate |
 | --- | --- |
-| **SQL Business Analytics Dashboard** | Data cleaning, SQL analysis, business metrics, and visualization |
+| **[SQL Business Analytics Dashboard](projects/sql-business-analytics/README.md)** ✅ | Published project: SQLite database, synthetic retail data, SQL reporting, and interactive Streamlit dashboard |
 | **Inventory Management Database** | ER diagrams, relational schema design, normalization, and queries |
 | **Cybersecurity Lab Notes** | Safe practice labs on Linux permissions and security concepts |
 | **Personal Portfolio Website** | A public home for projects, achievements, experience, and contact information |
 
-As each project is completed, I'll link its repository, screenshots, documentation, and results here.
+**First published project:** [Explore the SQL Business Analytics Dashboard](projects/sql-business-analytics/README.md). It includes runnable Python and SQL source code; the dashboard is not hosted online yet.\n\nAs each additional project is completed, I'll link its repository, screenshots, documentation, and results here.
 
 ## 📈 GitHub Activity
 

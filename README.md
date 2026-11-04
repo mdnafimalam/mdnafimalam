@@ -74,7 +74,7 @@ I'm currently preparing projects that demonstrate what I can build. My first pro
 | **Cybersecurity Lab Notes** | Safe practice labs on Linux permissions and security concepts |
 | **Personal Portfolio Website** | A public home for projects, achievements, experience, and contact information |
 
-**First published project:** [Explore the SQL Business Analytics Dashboard](projects/sql-business-analytics/README.md). It includes runnable Python and SQL source code; the dashboard is not hosted online yet.\n\nAs each additional project is completed, I'll link its repository, screenshots, documentation, and results here.
+**Live dashboard:** [Open the Streamlit app](https://nafim-sql-analytics.streamlit.app/) (deployment availability may vary).\n\n**First published project:** [Explore the SQL Business Analytics Dashboard](projects/sql-business-analytics/README.md). It includes runnable Python and SQL source code; a Streamlit Community Cloud deployment has been configured.\n\nAs each additional project is completed, I'll link its repository, screenshots, documentation, and results here.
 
 ## 📈 GitHub Activity
 

@@ -77,3 +77,10 @@ Open the Streamlit URL printed by `streamlit run app.py`. Select a date range an
 - Interactive category and date filters, SQL-backed KPIs, regional and monthly charts, and CSV export.
 
 **Important:** The dataset is generated, deterministic synthetic retail data. Metrics and recommendations are demonstration outputs, not real-world business results. For date windows without preceding-period data, growth percentages are intentionally omitted.
+
+
+## Retail Intelligence redesign
+
+The Streamlit application now includes four sidebar-navigated views: **Executive Overview**, **Sales Performance**, **Customer Insights**, and **Reports & Data Quality**. Global date, category, region, and customer-segment filters apply across the views. The interface includes period-over-period KPI comparisons where preceding-period data exists, product performance tables, repeat-customer metrics, and downloadable filtered CSV reports.
+
+The styling is designed for a professional portfolio presentation. All data remains deterministic and synthetic. The hosted deployment may take a short time to rebuild after a GitHub commit.

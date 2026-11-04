@@ -172,9 +172,24 @@ projects/sql-business-analytics/
 
 **SQL concepts demonstrated:** relational modeling, primary and foreign keys, `JOIN`, `GROUP BY`, `COUNT(DISTINCT)`, `SUM`, `ROUND`, common table expressions, and date-based aggregation.
 
-## Screenshots
+## Dashboard preview
 
-The live app is the best way to explore the dashboard. Screenshots of **Executive Overview**, **Sales Performance**, **Customer Insights**, and **Reports & Data Quality** can be added under `assets/` after capturing and reviewing them. No screenshot is embedded here until the actual image files are committed.
+![Retail Intelligence — Executive Overview dashboard showing revenue KPIs, interactive sidebar filters, and the dark-themed analytics workspace](retail-intelligence-executive-overview.png)
+
+*Executive Overview — live Streamlit dashboard with synthetic retail data. The screenshot demonstrates the professional dashboard layout, global filters, and key sales performance indicators. Values shown are illustrative and depend on the active filters.*
+
+**[Explore the interactive live dashboard](https://nafim-sql-analytics.streamlit.app/)**
+
+### Explore the four dashboard views
+
+| View | What to explore |
+| --- | --- |
+| Executive Overview | Revenue, completed orders, AOV, customer metrics, and revenue trends |
+| Sales Performance | Best-selling products, regional sales, and category comparisons |
+| Customer Insights | Customer segments, repeat purchasing, and revenue per customer |
+| Reports & Data Quality | Validation indicators, filtered records, and CSV export |
+
+*Additional screenshots for the remaining three views can be added later. The live application provides the full interactive experience.*
 
 ## Limitations and roadmap
 

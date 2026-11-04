@@ -108,6 +108,10 @@ def metrics():
     b.metric("Completed orders", f"{orders:,}", delta=orders_delta)
     c.metric("Average order value", f"$" + f"{aov:,.2f}")
     d.metric("Unique customers", f"{customers:,}")
+    e, f, g = st.columns(3)
+    e.metric("Units sold", f"{int(filtered['quantity'].sum()):,}")
+    f.metric("Revenue per customer", f"${revenue / customers:,.2f}" if customers else "—")
+    g.metric("Top category share", f"{by_category.iloc[0] / revenue:.1%}" if revenue else "—")
 
 monthly = filtered.assign(month=filtered["order_date"].dt.to_period("M").dt.to_timestamp()).groupby("month")["revenue"].sum()
 by_category = filtered.groupby("category")["revenue"].sum().sort_values(ascending=False)
@@ -124,6 +128,14 @@ if page == "Executive Overview":
         st.line_chart(monthly, x_label="Month", y_label="Revenue ($)")
     with right:
         st.bar_chart(by_category, x_label="Category", y_label="Revenue ($)")
+    st.markdown("### Daily revenue and 7-day moving average")
+    daily = filtered.groupby(filtered["order_date"].dt.normalize())["revenue"].sum()
+    daily = daily.reindex(pd.date_range(start, end, freq="D"), fill_value=0)
+    daily_trends = pd.DataFrame({
+        "Daily revenue": daily,
+        "7-day moving average": daily.rolling(7, min_periods=1).mean(),
+    })
+    st.line_chart(daily_trends, x_label="Date", y_label="Revenue ($)")
     st.markdown("### Business highlights")
     x, y, z = st.columns(3)
     x.info(f"**Leading category**\n\n{by_category.index[0]}")
@@ -139,6 +151,14 @@ elif page == "Sales Performance":
         st.bar_chart(by_region, x_label="Region", y_label="Revenue ($)")
     with right:
         st.bar_chart(by_product.head(10), x_label="Product", y_label="Revenue ($)")
+    st.markdown("### Category performance by region")
+    category_region = filtered.pivot_table(
+        index="region", columns="category", values="revenue", aggfunc="sum", fill_value=0
+    )
+    st.dataframe(
+        category_region.style.format("${:,.2f}").background_gradient(cmap="Blues", axis=None),
+        use_container_width=True,
+    )
     st.markdown("### Product performance table")
     product_table = filtered.groupby(["category", "product_name"]).agg(
         revenue=("revenue", "sum"), units_sold=("quantity", "sum"), order_count=("order_id", "nunique")
@@ -160,6 +180,25 @@ elif page == "Customer Insights":
     with right:
         st.markdown("#### Customers by region")
         st.bar_chart(filtered.groupby("region")["customer_id"].nunique().sort_values(ascending=False))
+    st.markdown("### Segment performance")
+    segment_summary = filtered.groupby("segment").agg(
+        revenue=("revenue", "sum"),
+        orders=("order_id", "nunique"),
+        customers=("customer_id", "nunique"),
+        units=("quantity", "sum"),
+    )
+    segment_summary["average_order_value"] = segment_summary["revenue"] / segment_summary["orders"]
+    segment_summary["revenue_per_customer"] = segment_summary["revenue"] / segment_summary["customers"]
+    st.dataframe(
+        segment_summary.reset_index(),
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "revenue": st.column_config.NumberColumn("Revenue", format="$%.2f"),
+            "average_order_value": st.column_config.NumberColumn("Avg. order value", format="$%.2f"),
+            "revenue_per_customer": st.column_config.NumberColumn("Revenue / customer", format="$%.2f"),
+        },
+    )
     st.caption("Repeat customer = customer with more than one completed order in the selected filters.")
 
 else:

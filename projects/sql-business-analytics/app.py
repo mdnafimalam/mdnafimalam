@@ -84,6 +84,21 @@ c1.metric("Revenue", f"${revenue:,.2f}")
 c2.metric("Orders", f"{orders:,}")
 c3.metric("Average order value*", f"${aov:,.2f}")
 c4.metric("Unique customers", f"{customers:,}")
+
+# Compare selected dates with the preceding equally long period.
+period_days = (end - start).days + 1
+previous_end = start - pd.Timedelta(days=1)
+previous_start = start - pd.Timedelta(days=period_days)
+previous = data.loc[data["order_date"].dt.date.between(previous_start, previous_end) & data["category"].isin(categories)]
+previous_revenue = previous["revenue"].sum()
+previous_orders = previous["order_id"].nunique()
+st.subheader("Period-over-period performance")
+p1, p2, p3 = st.columns(3)
+p1.metric("Revenue vs. prior period", f"${revenue:,.2f}", delta=f"{(revenue / previous_revenue - 1) * 100:+.1f}%" if previous_revenue else None)
+p2.metric("Orders vs. prior period", f"{orders:,}", delta=f"{(orders / previous_orders - 1) * 100:+.1f}%" if previous_orders else None)
+p3.metric("Prior-period revenue", f"${previous_revenue:,.2f}")
+if not previous_revenue:
+    st.caption("No comparable sales in the preceding period; growth percentage is unavailable.")
 st.caption("*For filtered categories, average order value reflects only selected category revenue per matching order.")
 
 monthly = (
@@ -105,6 +120,30 @@ with right:
     st.bar_chart(by_category)
     st.subheader("Revenue by region")
     st.bar_chart(filtered.groupby("region")["revenue"].sum().sort_values(ascending=False))
+
+st.subheader("Customer and product insights")
+segment_col, product_col = st.columns(2)
+with segment_col:
+    st.markdown("**Revenue by customer segment**")
+    st.bar_chart(filtered.groupby("segment")["revenue"].sum().sort_values(ascending=False))
+with product_col:
+    st.markdown("**Top 5 products by revenue**")
+    top_five = filtered.groupby("product_name")["revenue"].sum().nlargest(5).rename("Revenue").reset_index()
+    st.dataframe(top_five, hide_index=True, use_container_width=True)
+
+st.subheader("Business insights")
+top_category = by_category.index[0]
+top_region = filtered.groupby("region")["revenue"].sum().idxmax()
+top_product = top_products.index[0]
+st.markdown(f"- **Leading category:** {top_category}\n- **Leading region:** {top_region}\n- **Top product by revenue:** {top_product}")
+st.info("Next step: Compare lower-performing regions and customer segments to identify potential opportunities.")
+st.caption("These are descriptive insights from synthetic demo data, not causal conclusions.")
+
+st.subheader("Data quality checks")
+q1, q2, q3 = st.columns(3)
+q1.metric("Missing key values", int(filtered[["order_id", "customer_id", "product_name", "revenue"]].isna().sum().sum()))
+q2.metric("Negative revenue lines", int((filtered["revenue"] < 0).sum()))
+q3.metric("Filtered order lines", f"{len(filtered):,}")
 
 st.subheader("Filtered sales data")
 st.dataframe(filtered.sort_values("order_date", ascending=False), use_container_width=True)

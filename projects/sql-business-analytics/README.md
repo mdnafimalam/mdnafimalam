@@ -84,3 +84,13 @@ Open the Streamlit URL printed by `streamlit run app.py`. Select a date range an
 The Streamlit application now includes four sidebar-navigated views: **Executive Overview**, **Sales Performance**, **Customer Insights**, and **Reports & Data Quality**. Global date, category, region, and customer-segment filters apply across the views. The interface includes period-over-period KPI comparisons where preceding-period data exists, product performance tables, repeat-customer metrics, and downloadable filtered CSV reports.
 
 The styling is designed for a professional portfolio presentation. All data remains deterministic and synthetic. The hosted deployment may take a short time to rebuild after a GitHub commit.
+
+
+## Advanced KPI and chart enhancements
+
+- **New KPIs:** units sold, revenue per customer, and the share of revenue contributed by the leading product category.
+- **Revenue trend:** daily sales alongside a trailing seven-day moving average; dates without sales are displayed as zero revenue.
+- **Regional product mix:** category-by-region revenue matrix for side-by-side comparison.
+- **Customer segment performance:** segment-level revenue, distinct orders, customers, units, average order value, and revenue per customer.
+
+All views respect the dashboard's date, category, region, and customer-segment filters. These are descriptive metrics on synthetic demo data; period comparisons require available prior-period records.

@@ -1,5 +1,7 @@
 # SignalScope — Privacy-first Pattern Intelligence
 
+**Live app:** https://nafim-signalscope.streamlit.app/
+
 An original portfolio project by **Md Nafim Alam**, exploring unusual or repeated contact activity through **non-identifying metadata**.
 
 ## Highlights

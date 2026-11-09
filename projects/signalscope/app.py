@@ -230,7 +230,7 @@ tabs=st.tabs(["◉ Overview","⌕ Source Explorer","◫ Temporal Patterns","✓ 
 # ---------- Overview ----------
 with tabs[0]:
     st.markdown("### Executive overview")
-st.caption("High-level activity, outcomes, and source ranking for the current filter selection.")
+    st.caption("High-level activity, outcomes, and source ranking for the current filter selection.")
     left,right=st.columns([1.55,1])
 
     with left:
@@ -329,7 +329,7 @@ with tabs[1]:
 # ---------- Temporal Patterns ----------
 with tabs[2]:
     st.markdown("### Temporal patterns")
-st.caption("Explore concentration by weekday and hour to understand when activity is most frequent.")
+    st.caption("Explore concentration by weekday and hour to understand when activity is most frequent.")
     heat=weekday_hour_matrix(filtered)
     z=[heat[day] for day in WEEKDAYS]
     heatmap=go.Figure(go.Heatmap(
@@ -359,7 +359,7 @@ st.caption("Explore concentration by weekday and hour to understand when activit
 # ---------- Data Quality ----------
 with tabs[3]:
     st.markdown("### Data quality & coverage")
-st.caption("Review dataset completeness, duplicates, coverage, and export-ready filtered records.")
+    st.caption("Review dataset completeness, duplicates, coverage, and export-ready filtered records.")
     q=quality_summary(filtered)
     q1,q2,q3,q4=st.columns(4)
     q1.metric("Rows",q["rows"])
@@ -397,7 +397,7 @@ st.caption("Review dataset completeness, duplicates, coverage, and export-ready 
 # ---------- Methodology ----------
 with tabs[4]:
     st.markdown("### Methodology")
-st.caption("Understand exactly how the descriptive score works and where its limits are.")
+    st.caption("Understand exactly how the descriptive score works and where its limits are.")
     st.markdown("""
 <div class="section-card">
 <b>Activity score</b><br><br>

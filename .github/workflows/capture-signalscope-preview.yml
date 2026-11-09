@@ -37,16 +37,31 @@ jobs:
             });
 
             await page.goto('https://nafim-signalscope.streamlit.app/', {
-              waitUntil: 'networkidle',
+              waitUntil: 'domcontentloaded',
               timeout: 120000
             });
 
-            await page.getByText('See patterns. Keep the context.').waitFor({
-              state: 'visible',
-              timeout: 120000
-            });
+            await page.waitForTimeout(8000);
 
-            await page.waitForTimeout(3500);
+            const wakeTexts = [
+              'Yes, get this app back up!',
+              'Get this app back up',
+              'Wake up'
+            ];
+
+            for (const text of wakeTexts) {
+              const button = page.getByRole('button', { name: new RegExp(text, 'i') });
+              if (await button.count()) {
+                try {
+                  await button.first().click({ timeout: 5000 });
+                  await page.waitForTimeout(25000);
+                  break;
+                } catch (_) {}
+              }
+            }
+
+            await page.waitForTimeout(8000);
+
             await page.screenshot({
               path: 'docs/signalscope-preview.png',
               fullPage: false

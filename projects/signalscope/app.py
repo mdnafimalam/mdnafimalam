@@ -52,7 +52,7 @@ st.markdown("""
 [data-testid="stSidebar"]{background:#0d0c0f;border-right:1px solid #ffffff10}
 [data-testid="stSidebar"] .block-container{padding-top:1.3rem}
 h1,h2,h3{letter-spacing:-.045em}
-h1{font-size:clamp(2.8rem,5vw,5rem)!important;line-height:1!important;margin-bottom:.45rem!important}
+h1{font-size:clamp(2.4rem,4.15vw,4.2rem)!important;line-height:1.02!important;margin-bottom:.5rem!important;max-width:1100px}
 p,small{color:var(--muted)}
 [data-testid="stMetric"]{
   background:linear-gradient(145deg,#151216,#0f0e11);
@@ -61,11 +61,9 @@ p,small{color:var(--muted)}
 }
 [data-testid="stMetricLabel"]{color:#bdb2b6}
 [data-testid="stMetricValue"]{font-weight:850;letter-spacing:-.04em}
-.stTabs [data-baseweb="tab-list"]{gap:8px;border-bottom:1px solid #ffffff12}
-.stTabs [data-baseweb="tab"]{
-  height:46px;border-radius:10px 10px 0 0;padding:0 16px;color:#a99ca1
-}
-.stTabs [aria-selected="true"]{background:#231319!important;color:#fff!important}
+.stTabs [data-baseweb="tab-list"]{gap:6px;border-bottom:1px solid #ffffff12;background:#0e0d10;border-radius:12px 12px 0 0;padding:6px 8px 0}
+.stTabs [data-baseweb="tab"]{height:44px;border-radius:9px 9px 0 0;padding:0 14px;color:#a99ca1;font-weight:700}
+.stTabs [aria-selected="true"]{background:#2a171d!important;color:#fff!important;box-shadow:inset 0 -2px 0 #c94b5a}
 div[data-testid="stDataFrame"]{border:1px solid #ffffff12;border-radius:14px;overflow:hidden}
 div[data-testid="stPlotlyChart"]{border:1px solid #ffffff10;border-radius:16px;padding:8px;background:#0f0e11}
 .stButton>button,.stDownloadButton>button{
@@ -75,7 +73,7 @@ div[data-testid="stPlotlyChart"]{border:1px solid #ffffff10;border-radius:16px;p
 }
 .stButton>button:hover,.stDownloadButton>button:hover{border-color:#c34a59!important}
 .hero-kicker{font-size:.73rem;letter-spacing:.18em;text-transform:uppercase;font-weight:850;color:#e08a94;margin-bottom:8px}
-.hero-sub{font-size:1.05rem;color:#b6aaae;max-width:900px;line-height:1.75;margin-bottom:18px}
+.hero-sub{font-size:1rem;color:#b6aaae;max-width:880px;line-height:1.7;margin-bottom:16px}
 .badges{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 22px}
 .badge{padding:6px 10px;border-radius:999px;border:1px solid #61313a;background:#211318;color:#e9b9bf;font-size:.72rem;font-weight:800}
 .notice{border:1px solid #5d343c;background:linear-gradient(135deg,#1c1216,#100e11);border-radius:14px;padding:14px 16px;color:#cdbfc3;font-size:.87rem}
@@ -107,7 +105,7 @@ with st.sidebar:
         "Upload UTF-8 CSV",
         type="csv",
         disabled=source_mode!="Upload CSV",
-        help="Required: timestamp, source_id, channel, outcome"
+        help="Required: timestamp, source_id, channel, outcome. Maximum file size: 2 MB."
     )
 
 if source_mode=="Upload CSV":
@@ -189,6 +187,18 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.markdown(
+    """<div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:2px 0 16px">
+      <div style="font-size:.82rem;color:#9f9498">Interactive analytics workspace</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="badge">5 analysis views</span>
+        <span class="badge">CSV export</span>
+        <span class="badge">Source drilldown</span>
+      </div>
+    </div>""",
+    unsafe_allow_html=True
+)
+
+st.markdown(
     '<div class="notice">Responsible-use note: SignalScope highlights descriptive activity patterns. '
     'It does not identify people, prove intent, detect fraud, determine consent, or provide legal conclusions.</div>',
     unsafe_allow_html=True
@@ -215,11 +225,12 @@ m3.metric("Active days",k["active_days"])
 m4.metric("Unanswered",f'{k["unanswered_pct"]}%')
 m5.metric("Peak hour",f'{k["peak_hour"]:02d}:00')
 
-tabs=st.tabs(["Overview","Source Explorer","Temporal Patterns","Data Quality","Methodology"])
+tabs=st.tabs(["◉ Overview","⌕ Source Explorer","◫ Temporal Patterns","✓ Data Quality","i Methodology"])
 
 # ---------- Overview ----------
 with tabs[0]:
     st.markdown("### Executive overview")
+st.caption("High-level activity, outcomes, and source ranking for the current filter selection.")
     left,right=st.columns([1.55,1])
 
     with left:
@@ -318,6 +329,7 @@ with tabs[1]:
 # ---------- Temporal Patterns ----------
 with tabs[2]:
     st.markdown("### Temporal patterns")
+st.caption("Explore concentration by weekday and hour to understand when activity is most frequent.")
     heat=weekday_hour_matrix(filtered)
     z=[heat[day] for day in WEEKDAYS]
     heatmap=go.Figure(go.Heatmap(
@@ -347,6 +359,7 @@ with tabs[2]:
 # ---------- Data Quality ----------
 with tabs[3]:
     st.markdown("### Data quality & coverage")
+st.caption("Review dataset completeness, duplicates, coverage, and export-ready filtered records.")
     q=quality_summary(filtered)
     q1,q2,q3,q4=st.columns(4)
     q1.metric("Rows",q["rows"])
@@ -384,6 +397,7 @@ with tabs[3]:
 # ---------- Methodology ----------
 with tabs[4]:
     st.markdown("### Methodology")
+st.caption("Understand exactly how the descriptive score works and where its limits are.")
     st.markdown("""
 <div class="section-card">
 <b>Activity score</b><br><br>
@@ -422,4 +436,4 @@ Off-hours are before 08:00 or at/after 21:00 in the timestamp's supplied clock. 
     st.caption("Use synthetic or pseudonymized data only. Normalize time zones before comparing timestamps across regions.")
 
 st.markdown("---")
-st.caption("SignalScope · Built by Md Nafim Alam · Python · Streamlit · Plotly · Explainable analytics")
+st.caption("SignalScope · Built by Md Nafim Alam · Python · Streamlit · Plotly · Explainable analytics · Privacy-aware design")

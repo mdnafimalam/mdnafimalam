@@ -6,7 +6,14 @@ An original portfolio project by **Md Nafim Alam**, exploring unusual or repeate
 
 ## Highlights
 
-- Interactive Streamlit dashboard with a dark black / crimson interface
+- Five-view interface: **Overview, Source Explorer, Temporal Patterns, Data Quality, Methodology**
+- Global filtering by date, source, channel, and outcome
+- Area/line trend options and configurable ranking depth
+- Weekday × hour activity heatmap and source-level drilldowns
+- Exportable source rankings and filtered event data
+- Professional dark-crimson Streamlit design
+
+- Responsive Streamlit dashboard with a dark black / crimson interface
 - Daily patterns and hour-of-day activity visualizations
 - Source-level ranking with human-readable explanations
 - CSV upload, validation, filters, and summary export

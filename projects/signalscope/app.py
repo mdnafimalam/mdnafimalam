@@ -5,12 +5,27 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from analysis import (
-    parse_events, filter_events, overview, daily_counts, hourly_counts,
-    outcome_counts, channel_counts, weekday_hour_matrix, source_summary,
-    quality_summary, WEEKDAYS
-)
-from generate_demo import generate
+from importlib import reload
+import analysis as analytics
+import generate_demo as demo_generator
+
+# Streamlit reruns scripts in a long-lived process. Reload local modules so a
+# fresh GitHub deployment never keeps an older in-memory analytics module.
+analytics=reload(analytics)
+demo_generator=reload(demo_generator)
+
+parse_events=analytics.parse_events
+filter_events=analytics.filter_events
+overview=analytics.overview
+daily_counts=analytics.daily_counts
+hourly_counts=analytics.hourly_counts
+outcome_counts=analytics.outcome_counts
+channel_counts=analytics.channel_counts
+weekday_hour_matrix=analytics.weekday_hour_matrix
+source_summary=analytics.source_summary
+quality_summary=analytics.quality_summary
+WEEKDAYS=analytics.WEEKDAYS
+generate=demo_generator.generate
 
 st.set_page_config(
     page_title="SignalScope | Pattern Intelligence",

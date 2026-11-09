@@ -1,0 +1,22 @@
+name: SignalScope Tests
+on:
+  push:
+    paths:
+      - 'projects/signalscope/**'
+      - '.github/workflows/signalscope-tests.yml'
+  pull_request:
+    paths:
+      - 'projects/signalscope/**'
+      - '.github/workflows/signalscope-tests.yml'
+  workflow_dispatch:
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run SignalScope unit tests
+        working-directory: projects/signalscope
+        run: python -m unittest discover -s . -p 'test_*.py' -v

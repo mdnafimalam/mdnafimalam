@@ -8,7 +8,7 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
 )
 
-OUT = Path("docs/Md_Nafim_Alam_Professional_Resume.pdf")
+OUT = Path("docs/Md_Nafim_Alam_Resume.pdf")
 
 DARK = colors.HexColor("#181818")
 MUTED = colors.HexColor("#555555")

@@ -7,7 +7,7 @@
 Emporia State University · Expected Graduation: December 2027
 
 [![Portfolio](https://img.shields.io/badge/Portfolio-View%20Website-8F2027?style=for-the-badge)](https://mdnafimalam.github.io/mdnafimalam/)
-[![Resume](https://img.shields.io/badge/Resume-View%20PDF-BB3348?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](https://mdnafimalam.github.io/mdnafimalam/Md_Nafim_Alam_Professional_Resume.pdf)
+[![Resume](https://img.shields.io/badge/Resume-View%20PDF-BB3348?style=for-the-badge&logo=adobeacrobatreader&logoColor=white)](https://mdnafimalam.github.io/mdnafimalam/Md_Nafim_Alam_Resume.pdf)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/md-nafim-alam-129624404/)
 [![GitHub](https://img.shields.io/badge/GitHub-mdnafimalam-181717?style=for-the-badge&logo=github)](https://github.com/mdnafimalam)
 
@@ -119,7 +119,7 @@ Relevant areas of study include database systems, information systems, cybersecu
 ## Connect
 
 - **Portfolio:** https://mdnafimalam.github.io/mdnafimalam/
-- **Resume:** https://mdnafimalam.github.io/mdnafimalam/Md_Nafim_Alam_Professional_Resume.pdf
+- **Resume:** https://mdnafimalam.github.io/mdnafimalam/Md_Nafim_Alam_Resume.pdf
 - **LinkedIn:** https://www.linkedin.com/in/md-nafim-alam-129624404/
 - **GitHub:** https://github.com/mdnafimalam
 - **Email:** mdnafimalam@gmail.com

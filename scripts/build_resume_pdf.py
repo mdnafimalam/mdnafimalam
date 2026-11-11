@@ -148,8 +148,6 @@ story += [
     Paragraph("Emporia State University | BSB - Information Systems & Analytics | Expected December 2027", styles["role"]),
     Paragraph("<b>Relevant study:</b> Database systems, information systems, cybersecurity, finance, and quantitative problem solving.", styles["small"]),
 
-    section("Target Roles"),
-    Paragraph("Business Analyst | Data Analyst | Information Systems Analyst | Technology Operations | Entry-Level MIS Roles", styles["role"]),
 ]
 
 doc.build(story)
